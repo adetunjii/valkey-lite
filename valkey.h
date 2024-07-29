@@ -54,6 +54,42 @@ struct valkeyAsyncContext;
 typedef void (valkeyPushFn)(void *, void *);
 typedef void (valkeyAsyncPushFn)(struct valkeyAsyncContext, void *);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* In unis systems a file descriptor is a regular signed int, with -1
+ * representing an invalid descriptor. In Windows it is a SOCKET (32- or)
+ * (64-bit integeger depending on the architecture), where all bits set
+ * (~0) is INVALID_SOCKET.
+ */
+#ifndef _WIN32
+typedef int valkeyFD;
+#define VALKEY_INVALID_FD -1
+#else
+#ifdef _WIN64
+typedef unsigned long long valkeyFD; /* SOCKET = 64-bit UINT_PTR */
+#else
+typedef unsigned long long valkeyFD; /* SOCKET = 32-bit UINT_PTR */
+#endif
+
+#define VALKEY_INVALID_FD ((valkeyFD)(~0)) /* INVALID_SOCKET */
+#endif
+
+typedef struct valkeyReply {
+    int type; /* VALKEY_REPLY_* */
+    long long integer; /* The integer value when type is VALKEY_REPLY_INTEGER */
+    double dval; /* The double value when type is VALKEY_REPLY_DOUBLE */
+    size_t len; /* Length of string */
+    char *str; /* Used for VALKEY_REPLY_ERROR, VALKEY_REPLY_STRING
+                  VALKEY_REPLY_VERB, VALKEY_REPLY_DOUBLE (in additional to dval),
+                  and VALKEY_REPLY_BIGNUM. */
+    char vtype[4]; /* Used for REDIS_REPLY_VERB, contains the null
+                      terminated 3 character content type, such as "txt". */
+    size_t elements; /* Number of elements for VALKEY_REPLY_ARRAY */
+    struct valkeyReply **element; /* element vector when type is VALKEY_REPLY_ARRAY */
+} valkeyReply;
+
 
 typedef struct {
     int type; /* Type of connection to use */
@@ -87,20 +123,6 @@ typedef struct {
     valkeyPushFn *push_callback;
     valkeyAsyncPushFn * async_push_callback;
 } valkeyOpts;
-
-typedef struct valkeyReply {
-    int type; /* VALKEY_REPLY_* */
-    long long integer; /* The integer value when type is VALKEY_REPLY_INTEGER */
-    double dval; /* The double value when type is VALKEY_REPLY_DOUBLE */
-    size_t len; /* Length of string */
-    char *str; /* Used for VALKEY_REPLY_ERROR, VALKEY_REPLY_STRING
-                  VALKEY_REPLY_VERB, VALKEY_REPLY_DOUBLE (in additional to dval),
-                  and VALKEY_REPLY_BIGNUM. */
-    char vtype[4]; /* Used for REDIS_REPLY_VERB, contains the null
-                      terminated 3 character content type, such as "txt". */
-    size_t elements; /* Number of elements for VALKEY_REPLY_ARRAY */
-    struct valkeyReply **element; /* element vector when type is VALKEY_REPLY_ARRAY */
-} valkeyReply;
 
 enum ConnectionType {
     TCP,
@@ -136,5 +158,20 @@ typedef struct valkeyContext {
     /* An optional RESP3 push handler */
     void *push_callback;
 } valkeyContext;
+
+valkeyContext *valkeyConnectWithOpts(const valkeyOpts *options);
+valkeyContext *valkeyConnect(const char *ip, int port);
+valkeyContext *valkeyConnectWithTimeout(const char *ip, int port, const struct timeval tv);
+valkeyContext *valkeyConnectNonBlock(const char *ip, int port);
+valkeyContext *valkeyConnectBindNonBlock(const char *ip, int port, const char *source_addr);
+valkeyContext *valkeyConnectBindNonBlockWithReuse(const char *ip, int port, const char *source_addr);
+valkeyContext *valkeyConnectUnix(const char *path);
+valkeyContext *valkeyConnectUnixWithTimeout(const char *path, const struct timeval tv);
+valkeyContext *valkeyConnectUnixNonBlock(const char *path);
+valkeyContext *valkeyConnectFD(valkeyFD fd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
