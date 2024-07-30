@@ -2,6 +2,11 @@
 #define __VALKEY_READER_H
 #include <stdio.h>
 
+#define ERR_IO 0x01 /* Error in read or write */
+#define ERR_EOF 0x02 /* End of file */
+#define ERR_PROTOCOL 0x03 /* Protocol Error */
+#define ERR_TIMEOUT 0x06 /* Connection Timeout */
+
 #define REPLY_PUSH 12
 
 typedef struct valkeyReader {
@@ -13,9 +18,6 @@ typedef struct valkeyReader {
     size_t len; /* Buffer length */
     size_t maxbuf; /* Max length of unused buffer */
     long long maxelements; /* Max multi-bulk elements */
-
-    void **task;
-    int tasks;
 
     int readIdx; /* Current index of the read task */
     void *reply; /* Temporary reply pointer */

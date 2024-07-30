@@ -1,8 +1,9 @@
 #ifndef __VALKEY_H
 #define __VALKEY_H
-#include "reader.h"
 
 #include <stdint.h>
+
+#include "read.h"
 
 /* Connection type can be blocking or non-blocking and is set in
  * the least significant bit of the flags field in the valkeyCtx
@@ -112,7 +113,7 @@ typedef struct {
         const char *unix_socket;
 
         /* use this field to have valkey-lite operate on an already open file descriptor */
-        void *fd;
+        valkeyFD *fd;
     } endpoint;
 
     /* Optional user-defined data/destructors */
@@ -133,8 +134,9 @@ enum ConnectionType {
 typedef struct valkeyContext {
     int err; /* Error flag, set to 0 when there is no error */
     char errstr[128]; /* String representation of the error if it exists */
-    void *fd;
-    char *buf;
+    int flag;
+    valkeyFD *fd;
+    char *out_buf;
 
     enum ConnectionType conn_type;
 
