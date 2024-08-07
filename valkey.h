@@ -59,7 +59,7 @@ typedef void (valkeyAsyncPushFn)(struct valkeyAsyncContext, void *);
 extern "C" {
 #endif
 
-/* In unis systems a file descriptor is a regular signed int, with -1
+/* In unix systems a file descriptor is a regular signed int, with -1
  * representing an invalid descriptor. In Windows it is a SOCKET (32- or)
  * (64-bit integeger depending on the architecture), where all bits set
  * (~0) is INVALID_SOCKET.
