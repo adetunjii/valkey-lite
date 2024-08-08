@@ -1,14 +1,15 @@
-#include <sys/socket.h>
 #include <errno.h>
 #include <string.h>
-
+#include <sys/socket.h>
 #include "networking.h"
+#include "read.h"
+#include "sds.h"
 
 
 /* Defined in valkey.c */
 void setError(valkeyContext *ctx, int type, const char *str);
 
-ssize_t read(valkeyContext *ctx, char *buf, size_t bufcap) {
+ssize_t readNet(valkeyContext *ctx, char *buf, size_t bufcap) {
     ssize_t n = recv(ctx->fd, buf, bufcap, 0);
     if (n == -1) {
         if (errno == EWOULDBLOCK && !(ctx->flag & VALKEY_BLOCK) || (errno == EINTR)) {
@@ -26,4 +27,21 @@ ssize_t read(valkeyContext *ctx, char *buf, size_t bufcap) {
     } else {
         return n;
     }
+}
+
+ssize_t writeNet(valkeyContext *ctx) {
+    ssize_t n;
+
+    n = send(ctx->fd, ctx->out_buf, sdslen(ctx->out_buf), 0);
+    if (nwritten < 0) {
+        if ((errno == EWOULDBLOCK) && !(ctx->flag & VALKEY_BLOCK) || (errno == EINTR)) {
+            /* Try again */
+            return 0;
+        } else {
+            setError(ctx, ERR_IO, strerror(errno));
+            return -1;
+        }
+    }
+
+    return n
 }
