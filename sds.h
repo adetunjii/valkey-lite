@@ -178,16 +178,16 @@ static inline void sdsinclen(sds s, size_t inc) {
             }
             break;
         case SDS_TYPE_8:
-            SDS_HDR(8,s)->len = (uint8_t)inc;
+            SDS_HDR(8,s)->len += (uint8_t)inc;
             break;
         case SDS_TYPE_16:
-            SDS_HDR(16,s)->len = (uint16_t)inc;
+            SDS_HDR(16,s)->len += (uint16_t)inc;
             break;
         case SDS_TYPE_32:
-            SDS_HDR(32,s)->len = (uint32_t)inc;
+            SDS_HDR(32,s)->len += (uint32_t)inc;
             break;
         case SDS_TYPE_64:
-            SDS_HDR(64,s)->len = (uint64_t)inc;
+            SDS_HDR(64,s)->len += (uint64_t)inc;
             break;
     }
 }
@@ -253,6 +253,8 @@ sds sdscatprintf(sds s, const char *fmt, ...);
 
 sds sdscatfmt(sds s, char const *fmt, ...);
 sds sdstrim(sds s, const char *cset);
+sds sdsltrm(sds s, const char *cset);
+sds sdsrtrim(sds s, const char *cset);
 int sdsrange(sds s, ssize_t start, ssize_t end);
 void sdsupdatelen(sds s);
 void sdsclear(sds s);
