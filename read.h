@@ -2,10 +2,15 @@
 #define __VALKEY_READER_H
 #include <stdio.h>
 
-#define ERR_IO 0x01 /* Error in read or write */
-#define ERR_EOF 0x02 /* End of file */
-#define ERR_PROTOCOL 0x03 /* Protocol Error */
-#define ERR_TIMEOUT 0x06 /* Connection Timeout */
+#define VALKEY_ERR -1
+#define VALKEY_OK 0
+
+#define VALKEY_ERR_IO 0x01 /* Error in read or write */
+#define VALKEY_ERR_EOF 0x03 /* End of file */
+#define VALKEY_ERR_PROTOCOL 0x04 /* Protocol Error */
+#define VALKEY_ERR_OOM 0x05 /* Out of Memory */
+#define VALKEY_ERR_TIMEOUT 0x06 /* Connection Timeout */
+#define VALKEY_ERR_OTHER 0x02 /* Everything else... */
 
 #define REPLY_PUSH 12
 
