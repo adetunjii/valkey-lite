@@ -48,6 +48,10 @@ AF_UNSPEC is used) */
 #define VALKEY_PREFER_IPV4 (1 << 11)
 #define VALKEY_PREFER_IPV6 (1 << 12)
 
+/* number of times we retry to connect in the case of EADDRNOTAVAIL and
+ * SO_REUSEADDR is being used. */
+#define VALKEY_CONNECT_RETRIES 10
+
 struct valkeyAsyncContext;
 
 /* RESP3 push helpers and callback prototypes */
@@ -91,7 +95,6 @@ typedef struct valkeyReply {
     struct valkeyReply **element; /* element vector when type is VALKEY_REPLY_ARRAY */
 } valkeyReply;
 
-
 typedef struct {
     int type; /* Type of connection to use */
     int options; /* A bit field for REDIS_OPT_xxx */
@@ -126,19 +129,21 @@ typedef struct {
 } valkeyOpts;
 
 enum ConnectionType {
-    TCP,
-    UNIX,
-    USER_FD
+    CONN_TCP,
+    CONN_UNIX,
+    CONN_USER_FD
 };
 
 typedef struct valkeyContext {
     int err; /* Error flag, set to 0 when there is no error */
     char errstr[128]; /* String representation of the error if it exists */
-    int flag;
+    int flags;
     valkeyFD *fd;
     char *out_buf;
 
     enum ConnectionType conn_type;
+    struct timeval *conn_timeout;
+    struct timeval *command_timeout;
 
     struct {
         char *host;
